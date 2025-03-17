@@ -77,6 +77,12 @@ $ pip install -r requirements.txt
 $ cp .env.example .env
 ```
 
+### Run Alembic Migration
+
+```bash
+$ alembic upgrade head
+```
+
 Set your environment variables in the `.env` file. Like `OPENAI_API_KEY` value.
 
 ## Run Docker Compose Services
