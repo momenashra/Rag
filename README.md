@@ -28,11 +28,12 @@ This is an educational project where all of the codes where explained (step by s
 | 18 | Checkpoint-1 + Fix Issues                       | [Video](https://youtu.be/6zG4Idxldvg) | [branch](https://github.com/bakrianoo/mini-rag/tree/tut-012) |
 | 19 | Ollama Local LLM Server                       | [Video](https://youtu.be/-epZ1hAAtrs) | [branch](https://github.com/bakrianoo/mini-rag/tree/tut-012) |
 | 20 | From Mongo to Postgres + SQLAlchemy & Alembic                       | [Video](https://www.youtube.com/watch?v=BVOq7Ek2Up0) | [branch](https://github.com/bakrianoo/mini-rag/tree/tut-013) |
+| 21 | The way to PgVector                       | [Video](https://www.youtube.com/watch?v=g99yq5zlYAE) | [branch](https://github.com/bakrianoo/mini-rag/tree/tut-014) |
 
 
 ## Requirements
 
-- Python 3.8 or later
+- Python 3.10
 
 #### Install Dependencies
 
@@ -46,7 +47,7 @@ sudo apt install libpq-dev gcc python3-dev
 1) Download and install MiniConda from [here](https://docs.anaconda.com/free/miniconda/#quick-command-line-install)
 2) Create a new environment using the following command:
 ```bash
-$ conda create -n mini-rag python=3.8
+$ conda create -n mini-rag python=3.10
 ```
 3) Activate the environment:
 ```bash
