@@ -1,7 +1,7 @@
 [![Test Multiple Python Versions](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml/badge.svg)](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml)
 
 # Multimodal RAG application with web dev environment
-![ci-cd](https://github.com/user-attachments/assets/a0f705be-b0c3-453e-8908-84ae13eda607)
+![ci-cd](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*QPH4dpcdC-BwA_eQykLu2Q.png)
 
 ## Create a project scaffold
 * Create devlopment environment thai is cloud-based 
