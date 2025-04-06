@@ -1,7 +1,7 @@
 [![Test Multiple Python Versions](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml/badge.svg)](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml)
 
-# time-series-forecasting-CI-CD
-![ci-cd](https://github.com/user-attachments/assets/a0f705be-b0c3-453e-8908-84ae13eda607)
+# Multimodal RAG application with web dev environment
+![ci-cd](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*QPH4dpcdC-BwA_eQykLu2Q.png)
 
 ## Create a project scaffold
 * Create devlopment environment thai is cloud-based 
@@ -17,22 +17,37 @@ build out python project scaffold :
 *  test_library.py
 *  Dockerfile
 *  Command-line=tool
-*  Microservice (flask-flaskegger)
-### option 1 :
-1. Create Venv: `python3 -m venv ~/.time`
-2. edit my  `~/.bashrc.sh` to source it automatically `~/.time/bin/activate`
-3. Clone my repo : `git clone https://github.com/momenashra/time-series-forecasting-CI-CD.git`
-4. Run make all
-5. Run `python flask_app_UI.py`
-6. go to you local web browser and past `http://127.0.0.1:5000/apidocs`
-7. upload test file `test.csv`
-8. Now excute & Your are done!
-9. ### option 2 :
-* You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
-* It will make every thing for you!
-
-## setup environment variables
+*  Microservice (fast api-uvicorn)
+### setup environment variables
 ```bash
 $ cp .env.example .env
 ```
 set you environment variables in the `.env` file like api keys
+### option 1 :
+1. Create Venv
+ ```bash
+$ conda create -n mini-rag 
+```
+2. edit my  `~/.bashrc.sh` to source it automatically by adding
+ ```bash
+$ conda activate mini-rag 
+```
+3. Clone my repo :
+```bash
+$ git clone https://github.com/momenashra/RAG.git 
+```
+4. Run `make all`
+5. Run this command to start app
+ ```bash
+$ uvicorn main:app --reload --host 0.0.0.0 --port 5000
+```
+6. go to you local web browser and paste
+ ```bash
+$  http:/localhost:5000/
+``` 
+7. upload test file `test.csv`
+8. Now excute & Your are done!
+### option 2 :
+* You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
+* It will make every thing for you!
+
