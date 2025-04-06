@@ -31,3 +31,8 @@ build out python project scaffold :
 * You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
 * It will make every thing for you!
 
+## setup environment variables
+```bash
+$ cp .env.example .env
+```
+set you environment variables in the `.env` file like api keys
