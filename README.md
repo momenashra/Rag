@@ -32,10 +32,19 @@ $ conda create -n mini-rag
  ```bash
 $ conda activate mini-rag 
 ```
-3. Clone my repo : `git clone https://github.com/momenashra/RAG.git`
-4. Run make all
-5. Run `uvicorn main:app --reload --host 0.0.0.0 --port 5000`
-6. go to you local web browser and past `http:/localhost:5000/`
+3. Clone my repo :
+```bash
+$ git clone https://github.com/momenashra/RAG.git 
+```
+4. Run `make all`
+5. Run this command to start app
+ ```bash
+$ uvicorn main:app --reload --host 0.0.0.0 --port 5000
+```
+6. go to you local web browser and paste
+ ```bash
+$  http:/localhost:5000/
+``` 
 7. upload test file `test.csv`
 8. Now excute & Your are done!
 ### option 2 :
