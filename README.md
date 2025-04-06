@@ -18,21 +18,21 @@ build out python project scaffold :
 *  Dockerfile
 *  Command-line=tool
 *  Microservice (flask-flaskegger)
+### setup environment variables
+```bash
+$ cp .env.example .env
+```
+set you environment variables in the `.env` file like api keys
 ### option 1 :
 1. Create Venv: `python3 -m venv ~/.time`
 2. edit my  `~/.bashrc.sh` to source it automatically `~/.time/bin/activate`
-3. Clone my repo : `git clone https://github.com/momenashra/time-series-forecasting-CI-CD.git`
+3. Clone my repo : `git clone https://github.com/momenashra/RAG.git`
 4. Run make all
-5. Run `python flask_app_UI.py`
-6. go to you local web browser and past `http://127.0.0.1:5000/apidocs`
+5. Run `uvicorn main:app --reload --host 0.0.0.0 --port 5000`
+6. go to you local web browser and past `http:/localhost:5000/`
 7. upload test file `test.csv`
 8. Now excute & Your are done!
 9. ### option 2 :
 * You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
 * It will make every thing for you!
 
-## setup environment variables
-```bash
-$ cp .env.example .env
-```
-set you environment variables in the `.env` file like api keys
