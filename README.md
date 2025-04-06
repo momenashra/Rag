@@ -1,6 +1,6 @@
 [![Test Multiple Python Versions](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml/badge.svg)](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml)
 
-# time-series-forecasting-CI-CD
+# Multimodal RAG application with web dev environment
 ![ci-cd](https://github.com/user-attachments/assets/a0f705be-b0c3-453e-8908-84ae13eda607)
 
 ## Create a project scaffold
@@ -17,22 +17,28 @@ build out python project scaffold :
 *  test_library.py
 *  Dockerfile
 *  Command-line=tool
-*  Microservice (flask-flaskegger)
+*  Microservice (fast api-uvicorn)
 ### setup environment variables
 ```bash
 $ cp .env.example .env
 ```
 set you environment variables in the `.env` file like api keys
 ### option 1 :
-1. Create Venv: `python3 -m venv ~/.time`
-2. edit my  `~/.bashrc.sh` to source it automatically `~/.time/bin/activate`
+1. Create Venv
+ ```bash
+$ conda create -n mini-rag 
+```
+2. edit my  `~/.bashrc.sh` to source it automatically by adding
+ ```bash
+$ conda activate mini-rag 
+```
 3. Clone my repo : `git clone https://github.com/momenashra/RAG.git`
 4. Run make all
 5. Run `uvicorn main:app --reload --host 0.0.0.0 --port 5000`
 6. go to you local web browser and past `http:/localhost:5000/`
 7. upload test file `test.csv`
 8. Now excute & Your are done!
-9. ### option 2 :
+### option 2 :
 * You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
 * It will make every thing for you!
 
