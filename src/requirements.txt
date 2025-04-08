@@ -3,6 +3,8 @@ python-multipart==0.0.20
 uvicorn==0.33.0
 python-dotenv ==1.0.1
 pydantic_settings==2.8.1
+aiofiles == 24.1.0
+
 # black==25.1.0
 # DateTime==5.5
 # keras==3.9.0
