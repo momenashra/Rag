@@ -6,3 +6,6 @@ class ResponseSignals(Enum):
     FILE_SIZE_EXCEEDEDD = "file_size_exceeded"
     FILE_TYPE_NOT_SUPPORTED = "file_type_npt_supported"
     FILE_VALIDATE_SUCCESS = "file_validated_successfully"
+    FILE_PROCESSING_FAIL = "file_processing_failed"
+    FILE_PROCESSING_SUCCESS = "file_processed_successfully"
+    
