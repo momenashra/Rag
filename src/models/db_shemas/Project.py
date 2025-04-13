@@ -15,3 +15,15 @@ class Project (BaseModel):
         return value
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @classmethod
+    def get_indexes(cls):
+        return [
+            {
+                "key": [
+                    ("project_id", 1) # ascending order
+                ],
+                "name": "project_id_index_1",
+                "unique": True,
+            },
+        ] 
