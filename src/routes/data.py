@@ -9,8 +9,9 @@ import logging
 from .schema.schema_data import ProcessRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
-from models.db_shemas import DataChunk
-
+from models.db_shemas import DataChunk ,Asset
+from models.AssetModel import AssetModel
+from models.enums.AssetTypeEnum import AssetTypeEnum
 app_logger= logging.getLogger("uvicorn.error")
 
 data_router=APIRouter(
@@ -51,10 +52,27 @@ async def upload_data(request:Request,project_id: str , file : UploadFile,
                     "signal" : ResponseSignals.FILE_UPLOAD_FAIL.value
             }
         )
+    # store asset in the database   
+    asset_model=await AssetModel.create_instance(db_client=request.app.mongo_db)
+    asset_resource=Asset(
+        asset_project_id=project.id,
+        asset_name=file_id,
+        asset_type=AssetTypeEnum.FILE.value,
+        asset_size=os.path.getsize(file_path),
+        asset_config={
+            "file_path": file_path,
+            "file_id": file_id,
+            "file_name": file.filename,
+            "file_type": file.content_type,
+        }
+    )
+    # Check if the asset already exists in the database
+    asset_record= await asset_model.create_asset(asset=asset_resource)
+
     return JSONResponse(  
         content = {
             "signal" : ResponseSignals.FILE_UPLOAD_SUCCESS.value,
-            "file_id": file_id,
+            "file_id": str(asset_record.id),
             "project_id": str(project.id)
             }
         )
