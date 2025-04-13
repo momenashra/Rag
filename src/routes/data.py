@@ -24,7 +24,7 @@ data_controller=DataController()
 @data_router.post("/upload/{project_id}")
 async def upload_data(request:Request,project_id: str , file : UploadFile,
                         app_settings:Settings=Depends(get_settings)):
-    project_model=ProjectModel(db_client=request.app.mongo_db)
+    project_model=await ProjectModel.create_instance(db_client=request.app.mongo_db)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
 
@@ -62,7 +62,7 @@ async def upload_data(request:Request,project_id: str , file : UploadFile,
 
 @data_router.post("/process/{project_id}")
 async def process_endpoint(request:Request,project_id: str , process_request : ProcessRequest):
-    project_model=ProjectModel(db_client=request.app.mongo_db)
+    project_model=await ProjectModel.create_instance(db_client=request.app.mongo_db)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
     file_id = process_request.file_id
@@ -90,7 +90,7 @@ async def process_endpoint(request:Request,project_id: str , process_request : P
         )
         for i,chunk in enumerate(processed_chunks)
     ]
-    chunk_model=ChunkModel(db_client=request.app.mongo_db)
+    chunk_model=await ChunkModel.create_instance(db_client=request.app.mongo_db)
 
     if process_request.do_reset ==1:
         _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.id))
