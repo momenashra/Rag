@@ -83,38 +83,76 @@ async def process_endpoint(request:Request,project_id: str , process_request : P
     project_model=await ProjectModel.create_instance(db_client=request.app.mongo_db)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
-    file_id = process_request.file_id
     process_controller=ProcessController(project_id=project_id)
-    file_content=process_controller.get_file_content(file_id=file_id)
-    processed_chunks=process_controller.process_file_content(file_content=file_content,file_id=file_id,
-                                                              chunk_size=process_request.chunk_size,
-                                                              overlap_size=process_request.overlap_size)
 
+    project_file_ids={}
+    if process_request.file_id :
 
-    if processed_chunks is None or len(processed_chunks)==0:
+        asset_model=await AssetModel.create_instance(db_client=request.app.mongo_db)
+        asset_record= await asset_model.get_asset(asset_project_id=project.id,asset_name=process_request.file_id)
+        if asset_record is None:
+            return JSONResponse( 
+                status_code = status.HTTP_400_BAD_REQUEST, 
+                content = {
+                        "signal" : ResponseSignals.FILE_NOT_FOUND.value
+                }
+            )
+        else:
+            project_file_ids={
+                asset_record.id:asset_record.asset_name
+            }
+    else:
+        asset_model=await AssetModel.create_instance(db_client=request.app.mongo_db)
+        project_files=await asset_model.get_all_project_assets(asset_project_id=project.id,asset_type=AssetTypeEnum.FILE.value)
+        project_file_ids={
+            record.id:record.asset_name
+            for record in project_files 
+        }
+    if len(project_file_ids)==0:
         return JSONResponse( 
             status_code = status.HTTP_400_BAD_REQUEST, 
             content = {
-                    "signal" : ResponseSignals.FILE_PROCESSING_FAIL.value
+                    "signal" : ResponseSignals.NO_FILES_ERROR.value
             }
         )
-    
-    processed_chunks_records=[
-        DataChunk(
-            chunk_text=chunk.page_content,
-            chunk_metadata=chunk.metadata,
-            chunk_order=i+1,
-            chunk_project_id=project.id,
-        )
-        for i,chunk in enumerate(processed_chunks)
-    ]
+    inserted_count=0
+    no_files=0
     chunk_model=await ChunkModel.create_instance(db_client=request.app.mongo_db)
-
     if process_request.do_reset ==1:
         _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.id))
 
-    # Insert the processed chunks into the database
-    inserted_count = await chunk_model.insert_many_chunks(chunks=processed_chunks_records)
+    for asset_id,file_id in project_file_ids.items():
+
+        file_content=process_controller.get_file_content(file_id=file_id)
+        if file_content is None:
+            app_logger.error(f"error while processing file:{file_id} not found")
+            continue
+        processed_chunks=process_controller.process_file_content(file_content=file_content,file_id=file_id,
+                                                                chunk_size=process_request.chunk_size,
+                                                                overlap_size=process_request.overlap_size)
+
+        if processed_chunks is None or len(processed_chunks)==0:
+            return JSONResponse( 
+                status_code = status.HTTP_400_BAD_REQUEST, 
+                content = {
+                        "signal" : ResponseSignals.FILE_PROCESSING_FAIL.value
+                }
+            )
+        
+        processed_chunks_records=[
+            DataChunk(
+                chunk_text=chunk.page_content,
+                chunk_metadata=chunk.metadata,
+                chunk_order=i+1,
+                chunk_project_id=project.id,
+                chunk_asset_id=asset_id
+            )
+            for i,chunk in enumerate(processed_chunks)
+        ]
+
+        # Insert the processed chunks into the database
+        inserted_count += await chunk_model.insert_many_chunks(chunks=processed_chunks_records)
+        no_files += 1
     if inserted_count == 0:
         return JSONResponse( 
             status_code = status.HTTP_400_BAD_REQUEST, 
@@ -127,6 +165,7 @@ async def process_endpoint(request:Request,project_id: str , process_request : P
             content = {
                 "signal" : ResponseSignals.FILE_PROCESSING_SUCCESS.value,
                 "inserted_chunks_count": inserted_count,
+                "processed_files_count": no_files,
                 }
             )
 
