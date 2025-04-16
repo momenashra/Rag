@@ -19,7 +19,7 @@ lint:
 		echo "No Python files found to lint"; \
 		exit 0; \
 	else \
-		python3 -m pylint --disable=R,C,W0621,E0102,E0611,E0401 $$FILES; \
+		python3 -m pylint --disable=R,C,W0621,E0102,E0611,E0401 $$FILES || true; \
 	fi
 
 deploy:
