@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class ResponseSignals(Enum):
 
     FILE_UPLOAD_SUCCESS = "file_uploaded_successfully"
@@ -10,4 +12,3 @@ class ResponseSignals(Enum):
     FILE_PROCESSING_SUCCESS = "file_processed_successfully"
     NO_FILES_ERROR = "no_files_to_process"
     FILE_NOT_FOUND = "no_file_id_not_found"
-    
