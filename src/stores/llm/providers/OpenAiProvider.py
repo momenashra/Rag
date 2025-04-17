@@ -2,7 +2,7 @@ from ..LLMinterface import LLMInterface
 from openai import OpenAI
 from ..LLMEnums import OpenAiEnums
 import logging
-class OpenAiprovide(LLMInterface):
+class OpenAiprovider(LLMInterface):
 
     def __init__(self, api_key: str,api_url:str=None,
                         default_max_input_tokens:int=1000,
