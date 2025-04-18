@@ -28,7 +28,7 @@ class VectorDBInterface (ABC):
         """
         pass
     @abstractmethod
-    def get_collection_info(self, collection_name: str) -> Dict:
+    def get_collection_info(self, collection_name: str) -> dict:
         """
         Get information about a specific collection in the vector database.
         """
