@@ -71,12 +71,13 @@ class CoHereProvider(LLMInterface):
         if document_type == DocumentTypeEnums.QUERY.value:
             input_type = CoHereEnums.QUERY.value
         response=self.client.embed(
-            texts=[self.preprocess_text(text)], # Preprocess the text
-            model=self.embedding_model_id,
-            input_type=input_type,
-            output_dimension=1024,
-            embedding_types=["float"],
+        texts=[self.preprocess_text(text)], # Preprocess the text
+        model=self.embedding_model_id,
+        input_type=input_type,
+        # output_dimension=1024,
+        embedding_types=["float"],
         )
+        # print(response.embeddings.float[0])
         if response is None or response.embeddings is None or response.embeddings.float is None:
             self.logger.error("Failed to get embedding from Cohere API.")
             return None
