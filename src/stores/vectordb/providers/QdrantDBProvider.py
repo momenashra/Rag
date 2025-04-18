@@ -51,11 +51,13 @@ class QdrantDBProvider(VectorDBInterface):
 
 
     def create_collection(self, collection_name: str, embedding_dimension: int, do_reset:bool =False) :
+        self.logger.info(f"Creating new Qdrant collection: {collection_name}")
 
         if do_reset:
            _= self.client.delete_collection(collection_name=collection_name)
-           
-        if self.client.collection_exists(collection_name=collection_name):
+
+        if not self.client.collection_exists(collection_name=collection_name):
+            self.logger.info(f"Creating new Qdrant collection: {collection_name}")
             self.client.create_collection(
                 collection_name=collection_name,
                 vectors_config=models.VectorParams(
@@ -63,6 +65,8 @@ class QdrantDBProvider(VectorDBInterface):
                     distance=self.distance_method
                 )
             )
+            self.logger.info(f"Created new Qdrant collection: {collection_name}")
+
             return True
         return False
 
@@ -75,7 +79,7 @@ class QdrantDBProvider(VectorDBInterface):
                 _= self.client.upload_records(
                     collection_name=collection_name,
                     records=[models.Record(
-                        id=record_id,
+                        id=[record_id],
                         vector=vector,
                         payload={
                             "text": text,
@@ -102,7 +106,7 @@ class QdrantDBProvider(VectorDBInterface):
         if metadata is None:
             metadata = [None] * len(vectors)
         if record_ids is None:
-            record_ids = [None] * len(vectors)
+            record_ids = list(range(0,len(vectors)))
 
         for i in range(0, len(vectors), batch_size):
             batch_end=i+batch_size
@@ -120,7 +124,7 @@ class QdrantDBProvider(VectorDBInterface):
                             "metadata": batch_metadata[x]
                         }
                     )
-                for x in range(len(batch_vectors)):
+                for x in range(len(batch_vectors))
             ]
         try:
             _= self.client.upload_records(
