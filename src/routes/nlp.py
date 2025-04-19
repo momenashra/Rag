@@ -124,7 +124,10 @@ async def search_index(request: Request,project_id: str,serch_request: SearchReq
         return JSONResponse(
             content={
                 "signal": ResponseSignals.VECTOR_DB__SEARCH_SUCCESS.value,
-                "search_Results": search_results,
+                "search_Results": [
+                    result.dict()
+                    for result in search_results
+                ]
                 },
             )
     else:

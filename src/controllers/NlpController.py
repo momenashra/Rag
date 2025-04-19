@@ -3,7 +3,7 @@ from models import ResponseSignals
 from fastapi import HTTPException
 
 from models import ProcessingEnums
-from models.db_shemas import DataChunk, Project
+from models.db_shemas import DataChunk, Project,RetrivedData
 from typing import List
 from stores.llm.LLMEnums import DocumentTypeEnums
 import json
@@ -75,7 +75,5 @@ class NlpController(BaseController):
                             vector=vectors,
                             limit=limit,
             )
-        return json.loads(
-            json.dumps( search_result, default=lambda o: o.__dict__ ) 
-        )
-    
+        return search_result
+        
