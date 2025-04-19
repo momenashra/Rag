@@ -24,7 +24,7 @@ class OpenAiprovider(LLMInterface):
 
         self.logger = logging.getLogger(__name__)
 
-
+        self.enums = OpenAiEnums
 
     #this function to make app more flexible to use different models during runtime
     def set_generation_model(self, model_id:str):
