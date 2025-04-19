@@ -8,11 +8,12 @@ from typing import List
 from stores.llm.LLMEnums import DocumentTypeEnums
 import json
 class NlpController(BaseController):
-    def __init__(self,vector_db_client,embedding_client,generation_client):
+    def __init__(self,vector_db_client,embedding_client,generation_client,template_parser):
         super().__init__()
         self.vector_db_client = vector_db_client
         self.embedding_client = embedding_client
         self.generation_client = generation_client
+        self.template_parser = template_parser
         
     def create_collection_name(self,project_id:str):
         collection_name = f"collection_{project_id}"
@@ -77,3 +78,53 @@ class NlpController(BaseController):
             )
         return search_result
         
+
+    def answer_rag_questions(self,project:Project,query:str,limit:int=10):
+        retrived_documents = self.search_vector_db_collection(project=project,text=query,limit=limit)
+        answer,full_prompt,chat_history=None, None, None
+
+        if not retrived_documents or len(retrived_documents) ==0:
+            return answer,full_prompt,chat_history
+
+        #construcrt the context for the LLM (query + retrived documents)
+        system_prompt = self.template_parser.get(
+            group="rag",
+            key="system_prompt")
+        
+        
+
+        documents_prompts="\n".join([
+
+            self.template_parser.get(group="rag",
+                key="document_prompt",
+                vars={
+                    "doc_num": idx+1 ,
+                    "chunk_text": doc.text
+                }
+            )
+            for idx,doc in enumerate(retrived_documents)
+        ])
+        footer_prompt = self.template_parser.get(
+            group="rag",
+            key="footer_prompt",
+            vars={
+                "query": query,
+            }
+        )
+
+        chat_history = [
+            self.generation_client.construct_prompt(
+                prompt=system_prompt,
+                role= self.generation_client.enums.SYSTEM.value
+            )
+        ]
+
+        full_prompt="\n\n".join([documents_prompts,footer_prompt])
+
+        answer=self.generation_client.generate_text(
+            prompt=full_prompt,
+            chat_history=chat_history,
+            max_output_tokens=self.generation_client.default_max_output_tokens,
+            temperature=self.generation_client.default_temperature
+        )
+        return answer,full_prompt,chat_history

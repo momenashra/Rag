@@ -4,7 +4,7 @@ from helpers import get_settings, Settings
 from controllers.NlpController import NlpController
 from models import ResponseSignals
 import logging
-from .schema.nlp import PushRequest,SearchRequest
+from .schema.nlp import PushRequest,SearchRequest,AnswerRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from models.db_shemas import DataChunk
@@ -88,7 +88,8 @@ async def get_index_project_info(request: Request,project_id: str):
     nlp_controller = NlpController(
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
-        generation_client=request.app.generation_client
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser
     )
 
     collection_info =  nlp_controller.get_vector_db_collection_info(
@@ -102,7 +103,7 @@ async def get_index_project_info(request: Request,project_id: str):
         )
 
 @nlp_router.post("/index/search/{project_id}")
-async def search_index(request: Request,project_id: str,serch_request: SearchRequest):
+async def search_index(request: Request,project_id: str,search_request: SearchRequest):
 
     project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
 
@@ -113,12 +114,13 @@ async def search_index(request: Request,project_id: str,serch_request: SearchReq
     nlp_controller = NlpController(
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
-        generation_client=request.app.generation_client
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser
     )
     search_results = nlp_controller.search_vector_db_collection(
         project=project,
-        text=serch_request.text,
-        limit=serch_request.limit
+        text=search_request.text,
+        limit=search_request.limit
     )
     if search_results:
         return JSONResponse(
@@ -134,5 +136,41 @@ async def search_index(request: Request,project_id: str,serch_request: SearchReq
         return JSONResponse(
             content={
                 "signal": ResponseSignals.VECTOR_DB__SEARCH_ERROR.value,
+                },
+            )
+
+@nlp_router.post("/index/answer/{project_id}")
+async def search_index(request: Request,project_id: str,answer_request: AnswerRequest):
+
+    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+
+
+    # Check if the project exists in the database
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+    nlp_controller = NlpController(
+        vector_db_client=request.app.vector_db_client,
+        embedding_client=request.app.embedding_client,
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser
+    )
+
+    answer,full_prompt,chat_history= nlp_controller.answer_rag_questions(
+        project=project,
+        query=answer_request.query,
+        limit=answer_request.limit
+    )
+    if answer and full_prompt and chat_history:
+        return JSONResponse(
+            content={
+                "signal": ResponseSignals.GENERATION_SUCCESS.value,
+                "answer": answer,
+                "full_prompt": full_prompt,
+                "chat_history": chat_history
+            },
+        )
+    else:
+        return JSONResponse(
+            content={
+                "signal": ResponseSignals.GENERATION_ERROR.value,
                 },
             )
