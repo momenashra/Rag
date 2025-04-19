@@ -17,43 +17,14 @@ build out python project scaffold :
 *  test_library.py
 *  Dockerfile
 *  Command-line=tool
-*  Microservice (fast api-uvicorn)
-### setup environment variables
-```bash
-$ cp .env.example .env
-```
-## Run Docker Compose Services
-
-```bash
-$ cd docker
-$ cp .env.example .env
-```
-
-- update `.env` with your credentials
-
-set you environment variables in the `.env` file like api keys
+*  Microservice (flask-flaskegger)
 ### option 1 :
-1. Create Venv
- ```bash
- conda create -n mini-rag 
-```
-2. edit my  `~/.bashrc.sh` to source it automatically by adding
- ```bash
- conda activate mini-rag 
-```
-3. Clone my repo :
-```bash
- git clone https://github.com/momenashra/RAG.git 
-```
-4. Run `make all`
-5. Run this command to start app
- ```bash
- uvicorn main:app --reload --host 0.0.0.0 --port 5000
-```
-6. go to you local web browser and paste
- ```bash
-  http:/localhost:5000/
-``` 
+1. Create Venv: `python3 -m venv ~/.time`
+2. edit my  `~/.bashrc.sh` to source it automatically `~/.time/bin/activate`
+3. Clone my repo : `git clone https://github.com/momenashra/time-series-forecasting-CI-CD.git`
+4. Run make all
+5. Run `python flask_app_UI.py`
+6. go to you local web browser and past `http://127.0.0.1:5000/apidocs`
 7. upload test file `test.csv`
 8. Now excute & Your are done!
 ### option 2 :
