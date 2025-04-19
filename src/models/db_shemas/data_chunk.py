@@ -23,3 +23,7 @@ class DataChunk(BaseModel):
                 "unique": False,
             },
         ]
+
+class RetrivedData(BaseModel):
+    text: str
+    score: float
