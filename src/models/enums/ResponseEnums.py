@@ -19,3 +19,5 @@ class ResponseSignals(Enum):
     PROJECT_INDEX_INFO_SUCCESS = "project_index_info_retrived_successfully"
     VECTOR_DB__SEARCH_ERROR = "vector_db_search_error"
     VECTOR_DB__SEARCH_SUCCESS = "vector_db_search_success"
+    GENERATION_SUCCESS = "generation_success"
+    GENERATION_ERROR = "generation_error"
