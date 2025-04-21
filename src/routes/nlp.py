@@ -20,9 +20,9 @@ nlp_router = APIRouter(
 @nlp_router.post("/index/push/{project_id}")
 async def index_project(request: Request,project_id: str,push_request: PushRequest):
 
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
 
-    chunk_model = await ChunkModel.create_instance(db_client=request.app.mongo_db)
+    chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
 
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
@@ -79,7 +79,7 @@ async def index_project(request: Request,project_id: str,push_request: PushReque
 @nlp_router.get("/index/info/{project_id}")
 async def get_index_project_info(request: Request,project_id: str):
 
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
 
 
     # Check if the project exists in the database
@@ -105,7 +105,7 @@ async def get_index_project_info(request: Request,project_id: str):
 @nlp_router.post("/index/search/{project_id}")
 async def search_index(request: Request,project_id: str,search_request: SearchRequest):
 
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
 
 
     # Check if the project exists in the database
@@ -142,7 +142,7 @@ async def search_index(request: Request,project_id: str,search_request: SearchRe
 @nlp_router.post("/index/answer/{project_id}")
 async def search_index(request: Request,project_id: str,answer_request: AnswerRequest):
 
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
 
 
     # Check if the project exists in the database
