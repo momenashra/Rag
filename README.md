@@ -1,5 +1,4 @@
-[![Test Multiple Python Versions](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml/badge.svg)](https://github.com/momenashra/time-series-forecasting-CI-CD/actions/workflows/Continous_integration.yml)
-
+[![Test Multiple Python Versions](https://github.com/momenashra/Rag/actions/workflows/my-workflow.yml/badge.svg)](https://github.com/momenashra/Rag/actions/workflows/my-workflow.yml)
 # Multimodal RAG application with web dev environment
 ![ci-cd](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*QPH4dpcdC-BwA_eQykLu2Q.png)
 
