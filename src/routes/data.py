@@ -32,7 +32,7 @@ async def upload_data(
     file: UploadFile,
     app_settings: Settings = Depends(get_settings),
 ):
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
 
@@ -57,7 +57,7 @@ async def upload_data(
             content={"signal": ResponseSignals.FILE_UPLOAD_FAIL.value},
         )
     # store asset in the database
-    asset_model = await AssetModel.create_instance(db_client=request.app.mongo_db)
+    asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
     asset_resource = Asset(
         asset_project_id=project.id,
         asset_name=file_id,
@@ -86,7 +86,7 @@ async def upload_data(
 async def process_endpoint(
     request: Request, project_id: str, process_request: ProcessRequest
 ):
-    project_model = await ProjectModel.create_instance(db_client=request.app.mongo_db)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
     process_controller = ProcessController(project_id=project_id)
@@ -94,7 +94,7 @@ async def process_endpoint(
     project_file_ids = {}
     if process_request.file_id:
 
-        asset_model = await AssetModel.create_instance(db_client=request.app.mongo_db)
+        asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         asset_record = await asset_model.get_asset(
             asset_project_id=project.id, asset_name=process_request.file_id
         )
@@ -106,7 +106,7 @@ async def process_endpoint(
         else:
             project_file_ids = {asset_record.id: asset_record.asset_name}
     else:
-        asset_model = await AssetModel.create_instance(db_client=request.app.mongo_db)
+        asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         project_files = await asset_model.get_all_project_assets(
             asset_project_id=project.id, asset_type=AssetTypeEnum.FILE.value
         )
@@ -118,7 +118,7 @@ async def process_endpoint(
         )
     inserted_count = 0
     no_files = 0
-    chunk_model = await ChunkModel.create_instance(db_client=request.app.mongo_db)
+    chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
     if process_request.do_reset == 1:
         _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.id))
 
