@@ -10,3 +10,9 @@ class SearchRequest(BaseModel):
     text: str 
     limit: Optional[int] = 10
 
+
+class AnswerRequest(BaseModel):
+    query: str 
+    limit: Optional[int] = 10
+
+

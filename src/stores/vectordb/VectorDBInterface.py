@@ -1,5 +1,6 @@
 from abc import ABC ,abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
+from models.db_shemas import RetrivedData
 
 class VectorDBInterface (ABC):
     """
@@ -74,7 +75,7 @@ class VectorDBInterface (ABC):
     @abstractmethod
     def search_by_vector(self, 
                         collection_name: str, vector: List, 
-                        limit: int = 5) :
+                        limit: int = 5) -> List[RetrivedData]:
         """
         Search for documents in the vector database using a vector.
         """

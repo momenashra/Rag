@@ -22,7 +22,7 @@ class CoHereProvider(LLMInterface):
         )
         self.logger = logging.getLogger(__name__)
 
-
+        self.enums = CoHereEnums
 
     def set_generation_model(self, model_id:str):
         self.generation_model_id = model_id
@@ -51,10 +51,10 @@ class CoHereProvider(LLMInterface):
                 max_tokens=self.max_output_tokens,
                 temperature=self.temperature
             )
-        if response is None or response.message is None or len(response.message) == 0 or len(response.message.content[0]) == 0 or response.message.content[0] is None or response.message.content[0].text is None :
+        if response is None or response.message is None   or response.message.content[0] is None or response.message.content[0].text is None :
             self.logger.error("Failed to get generation from Cohere API.")
             return None
-        return response.choices[0].message.content
+        return response.message.content[0].text
 
 
     def embed_text(self, text:str,document_type:str=None):
