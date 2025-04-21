@@ -9,7 +9,7 @@
 * Project : Machine Learning and Deep learning Models for Predicting Sales in 3 different cities
 * Project Description This project uses machine learning algorithms to predict sales for retail products based on historical data. The model leverages various features such as product category, location, and time of year.
 * Technologies Used :
-* ‎requirements.txt [https://github.com/momenashra/time-series-forecasting-CI-CD/blob/46227957f717f42140f1844ce96e27f582704d81/requirements.txt]
+* ‎requirements.txt [https://github.com/momenashra/Rag/blob/main/requirements.txt]
 ### Github Codespaces 
 build out python project scaffold :
 *  Makefile
@@ -18,6 +18,9 @@ build out python project scaffold :
 *  Dockerfile
 *  Command-line=tool
 *  Microservice (fast api-uvicorn)
+*  Ngrok
+*  Qdrant
+*  mongoDb
 ### setup environment variables
 ```bash
 $ cp .env.example .env
