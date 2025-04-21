@@ -19,12 +19,13 @@ class OpenAiprovider(LLMInterface):
         self.embedding_size = None
 
         self.client = OpenAI(
-            api_key=self.api_key,
-        )
+                api_key=self.api_key,
+                base_url=self.api_url if self.api_url and len(self.api_url) else None,
+            )
 
         self.logger = logging.getLogger(__name__)
 
-
+        self.enums = OpenAiEnums
 
     #this function to make app more flexible to use different models during runtime
     def set_generation_model(self, model_id:str):

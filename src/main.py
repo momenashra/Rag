@@ -8,6 +8,8 @@ from stores.llm.LLMEnums import LLMEnums
 
 from stores.vectordb import VectorDBEnums
 from stores.vectordb.VectorDBProvidersFactory import VectorDBProvidersFactory
+from stores.llm.templetes.templete_parser import TemplateParser
+
 app = FastAPI()
 
 
@@ -30,6 +32,10 @@ async def startup_span():
     #vector db client
     app.vector_db_client = Vector_DB_Providers_Factory.create(provider_name=settings.VECTOR_DB_BACKEND)
     app.vector_db_client.connect()
+    app.template_parser = TemplateParser(
+        language=settings.PRIMARY_LANGUAGE,
+        default_language=settings.DEFAULT_LANGUAGE,
+    )
 
 @app.on_event("shutdown")
 async def shutdown_span():
