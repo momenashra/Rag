@@ -75,7 +75,7 @@ class OpenAiprovider(LLMInterface):
         self.text = text
         self.document_type = document_type
         response = self.client.embeddings.create(
-            input=self.text,
+            input=self.preprocess_text(text),
             model=self.embedding_model_id
         )
         if response is None or response.data is None or len(response.data) == 0 or response.data[0].embedding is None:
@@ -89,7 +89,7 @@ class OpenAiprovider(LLMInterface):
     def construct_prompt(self, prompt:str,role:str):
         return{
             "role": role,
-            "content": self.preprocess_text(prompt)
+            "content": prompt
         }
 
     #not added to interface cause it is just helper finction not mandatory to all providers
