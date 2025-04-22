@@ -36,7 +36,7 @@ class ProjectModel(BaseDataModel):
             project.model_dump(by_alias=True, exclude_unset=True)
         )
         # Check if the insertion was successful
-        project.id = result.inserted_id
+        project.project_id = result.inserted_id
         return project  # Return the created project with the assigned _id
 
     async def get_project_or_create_one(self, project_id: str):

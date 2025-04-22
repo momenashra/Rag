@@ -28,7 +28,7 @@ data_controller = DataController()
 @data_router.post("/upload/{project_id}")
 async def upload_data(
     request: Request,
-    project_id: str,
+    project_id: int,
     file: UploadFile,
     app_settings: Settings = Depends(get_settings),
 ):
@@ -59,7 +59,7 @@ async def upload_data(
     # store asset in the database
     asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
     asset_resource = Asset(
-        asset_project_id=project.id,
+        asset_project_id=project.project_id,
         asset_name=file_id,
         asset_type=AssetTypeEnum.FILE.value,
         asset_size=os.path.getsize(file_path),
@@ -76,15 +76,15 @@ async def upload_data(
     return JSONResponse(
         content={
             "signal": ResponseSignals.FILE_UPLOAD_SUCCESS.value,
-            "file_id": str(asset_record.id),
-            "project_id": str(project.id),
+            "file_id": str(asset_record.asset_id),
+            "project_id": str(project.project_id),
         }
     )
 
 
 @data_router.post("/process/{project_id}")
 async def process_endpoint(
-    request: Request, project_id: str, process_request: ProcessRequest
+    request: Request, project_id: int, process_request: ProcessRequest
 ):
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     # Check if the project exists in the database
@@ -96,7 +96,7 @@ async def process_endpoint(
 
         asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         asset_record = await asset_model.get_asset(
-            asset_project_id=project.id, asset_name=process_request.file_id
+            asset_project_id=project.project_id, asset_name=process_request.file_id
         )
         if asset_record is None:
             return JSONResponse(
@@ -104,13 +104,13 @@ async def process_endpoint(
                 content={"signal": ResponseSignals.FILE_NOT_FOUND.value},
             )
         else:
-            project_file_ids = {asset_record.id: asset_record.asset_name}
+            project_file_ids = {asset_record.asset_id: asset_record.asset_name}
     else:
         asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
         project_files = await asset_model.get_all_project_assets(
-            asset_project_id=project.id, asset_type=AssetTypeEnum.FILE.value
+            asset_project_id=project.project_id, asset_type=AssetTypeEnum.FILE.value
         )
-        project_file_ids = {record.id: record.asset_name for record in project_files}
+        project_file_ids = {record.asset_id: record.asset_name for record in project_files}
     if len(project_file_ids) == 0:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -120,7 +120,7 @@ async def process_endpoint(
     no_files = 0
     chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
     if process_request.do_reset == 1:
-        _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.id))
+        _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.project_id))
 
     for asset_id, file_id in project_file_ids.items():
 
@@ -146,7 +146,7 @@ async def process_endpoint(
                 chunk_text=chunk.page_content,
                 chunk_metadata=chunk.metadata,
                 chunk_order=i + 1,
-                chunk_project_id=project.id,
+                chunk_project_id=project.project_id,
                 chunk_asset_id=asset_id,
             )
             for i, chunk in enumerate(processed_chunks)
