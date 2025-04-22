@@ -30,6 +30,6 @@ class DataChunk(SQLAlchemyBase):
        Index('idx_chunk_project_id', chunk_project_id),
        Index('idx_chunk_uuid', chunk_uuid),
     )
-class RetrievedDocument(BaseModel):
+class RetrivedData(BaseModel):
     text: str
     score: float
