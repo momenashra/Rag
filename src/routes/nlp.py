@@ -38,7 +38,8 @@ async def index_project(request: Request,project_id: int,push_request: PushReque
     nlp_controller = NlpController(
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
-        generation_client=request.app.generation_client
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser
     )
     
     has_records= True
