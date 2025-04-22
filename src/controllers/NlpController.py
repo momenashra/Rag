@@ -89,7 +89,8 @@ class NlpController(BaseController):
         #construcrt the context for the LLM (query + retrived documents)
         system_prompt = self.template_parser.get(
             group="rag",
-            key="system_prompt")
+            key="system_prompt",
+            )
         
         
 
