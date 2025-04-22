@@ -16,12 +16,15 @@ SQLAlchemy==2.0.40
 asyncpg==0.30.0
 
 sqlalchemy
-
+alembic==1.15.2
+psycopg2==2.9.10
 
 
 black==24.8.0
 pylint==3.2.7
 pytest==8.3.5
+
+
 # DateTime==5.5
 # keras==3.9.0
 # matplotlib==3.10.1
