@@ -54,3 +54,12 @@ class ChunkModel(BaseDataModel):
                 query =await session.execute (select(DataChunk).where(DataChunk.chunk_project_id == project_id))
                 records= query.scalars().all()
             return records
+    
+    async def get_total_chunks_count(self, project_id: ObjectId):
+        records_count=0
+        async with self.db_client() as session:
+            async with session.begin():
+                count_query = await session.execute (select(func.count(DataChunk.chunk_id)).where(DataChunk.chunk_project_id == project_id))
+                records_count= count_query.scalar()
+        return records_count
+    

@@ -22,7 +22,8 @@ async def startup_span():
     )
     
     llm_provider_factory = LLMProviderFactory(settings)
-    Vector_DB_Providers_Factory = VectorDBProvidersFactory(settings)
+    Vector_DB_Providers_Factory = VectorDBProvidersFactory(settings,
+                                                           db_client= app.db_client )
     #generation client
     app.generation_client = llm_provider_factory.create(provider_name=settings.GENERATION_BACKEND)
     app.generation_client.set_generation_model(model_id=settings.GENERATION_MODLE_ID)
@@ -33,7 +34,7 @@ async def startup_span():
 
     #vector db client
     app.vector_db_client = Vector_DB_Providers_Factory.create(provider_name=settings.VECTOR_DB_BACKEND)
-    app.vector_db_client.connect()
+    await app.vector_db_client.connect()
     app.template_parser = TemplateParser(
         language=settings.PRIMARY_LANGUAGE,
         default_language=settings.DEFAULT_LANGUAGE,
@@ -41,8 +42,8 @@ async def startup_span():
 
 @app.on_event("shutdown")
 async def shutdown_span():
-    app.db_engine.dispose()
-    app.vector_db_client.disconnect()
+    await app.db_engine.dispose()
+    await app.vector_db_client.disconnect()
 
 
 app.include_router(base.base_router)

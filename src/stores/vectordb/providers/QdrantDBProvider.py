@@ -6,12 +6,13 @@ from typing import List
 from models.db_shemas import RetrivedData
 
 class QdrantDBProvider(VectorDBInterface):
-    def __init__(self, db_path: str,distance_method:str):
+    def __init__(self, db_client,default_vector_size:int =786 ,
+                distance_method:str = DistanceTypeEnum.COSINE.value,index_threshold:int = 100):
         
-        self.db_path = db_path
+        self.db_client = db_client
         self.distance_method = None
         self.client = None
-
+        self.default_vector_size = default_vector_size
         if distance_method == DistanceTypeEnum.COSINE.value:
             self.distance_method = models.Distance.COSINE
         elif distance_method == DistanceTypeEnum.EUCLIDEAN.value:
@@ -22,40 +23,38 @@ class QdrantDBProvider(VectorDBInterface):
             raise ValueError(f"Invalid distance method: {distance_method}")
         
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("uvicorn")
 
-    def connect(self):
-        self.client = QdrantClient(path=self.db_path)
+    async def connect(self):
+        self.client = QdrantClient(path=self.db_client)
 
-    def disconnect(self):
+    async def disconnect(self):
         self.client=None
 
-    def is_collection_exists(self, collection_name: str):
+    async def is_collection_exists(self, collection_name: str):
          return self.client.collection_exists(collection_name=collection_name)
 
 
 
-    def list_all_collections(self) :
+    async def list_all_collections(self) :
         return self.client.get_collections()
         
 
-    def get_collection_info(self, collection_name: str) :
+    async def get_collection_info(self, collection_name: str) :
         return self.client.get_collection(collection_name=collection_name)
 
     
-    def delete_collection(self, collection_name: str) :
+    async def delete_collection(self, collection_name: str) :
         if self.client.collection_exists(collection_name=collection_name):
             return self.client.delete_collection(collection_name=collection_name) 
    
 
 
 
-    def create_collection(self, collection_name: str, embedding_dimension: int, do_reset:bool =False) :
-        self.logger.info(f"Creating new Qdrant collection: {collection_name}")
-
+    async def create_collection(self, collection_name: str, embedding_dimension: int, do_reset:bool =False) :
         if do_reset:
            _= self.client.delete_collection(collection_name=collection_name)
-
+        self.logger.info(f"Creating new Qdrant collection: {collection_name}")
         if not self.client.collection_exists(collection_name=collection_name):
             self.logger.info(f"Creating new Qdrant collection: {collection_name}")
             self.client.create_collection(
@@ -66,11 +65,10 @@ class QdrantDBProvider(VectorDBInterface):
                 )
             )
             self.logger.info(f"Created new Qdrant collection: {collection_name}")
-
             return True
         return False
 
-    def insert_one (self, 
+    async def insert_one (self, 
                     collection_name: str, text: str, 
                     vector: List, metadata: dict =None 
                     , record_id :str =None):
@@ -98,7 +96,7 @@ class QdrantDBProvider(VectorDBInterface):
 
 
 
-    def insert_many (self, 
+    async def insert_many (self, 
                      collection_name: str, texts: List , 
                      vectors: List , metadata: List =None , 
                      record_ids :List =None , batch_size:int =50):
@@ -137,14 +135,13 @@ class QdrantDBProvider(VectorDBInterface):
         
         return True
 
-    def search_by_vector(self, 
-                        collection_name: str, vector: List, 
-                        limit: int = 5)  -> List[RetrivedData]:
-        results= self.client.search(
-            collection_name=collection_name,
-            query_vector=vector,
-            limit=limit
-        )
+    async def search_by_vector(self,collection_name: str, vector: List, 
+                                limit: int = 5)  -> List[RetrivedData]:
+        
+        results= self.client.search(collection_name=collection_name,
+                                    query_vector=vector,
+                                    limit=limit
+                )
         if not results or len(results) ==0:
             return None 
         return [

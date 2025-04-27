@@ -2,8 +2,9 @@ from ..LLMinterface import LLMInterface
 from openai import OpenAI
 from ..LLMEnums import OpenAiEnums
 import logging
-class OpenAiprovider(LLMInterface):
+from typing import List,Union
 
+class OpenAiprovider(LLMInterface):
     def __init__(self, api_key: str,api_url:str=None,
                         default_max_input_tokens:int=1000,
                         default_max_output_tokens:int=1000,
@@ -64,24 +65,28 @@ class OpenAiprovider(LLMInterface):
 
 
 
-    def embed_text(self, text:str,document_type:str=None):
+    def embed_text(self, text: Union[str, List[str]], document_type: str = None):
         if self.client is None:
             self.logger.error("Client is not initialized. Please provide a valid API key and URL.")
             return None
-        
+        if isinstance(text, str):
+            text = [text]
         if not self.embedding_model_id:
             self.logger.error("Embedding model ID is not set. Please set it using set_embedding_model method.")
             return None
-        self.text = text
-        self.document_type = document_type
+
+        # Preprocess each text individually
+        preprocessed_texts = [self.preprocess_text(t) for t in text]
+
         response = self.client.embeddings.create(
-            input=self.preprocess_text(text),
+            input=preprocessed_texts,
             model=self.embedding_model_id
         )
         if response is None or response.data is None or len(response.data) == 0 or response.data[0].embedding is None:
             self.logger.error("Failed to get embedding from OpenAI API.")
             return None
-        return response.data[0].embedding
+        return [rec.embedding for rec in response.data]
+
 
 
 
@@ -95,4 +100,4 @@ class OpenAiprovider(LLMInterface):
     #not added to interface cause it is just helper finction not mandatory to all providers
     def preprocess_text(self, text:str):
         # Preprocess the text
-        return text[:self.default_max_input_tokens].strip()
+        return text[:self.default_max_input_tokens]
