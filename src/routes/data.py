@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
 from fastapi.responses import JSONResponse
 from helpers import get_settings, Settings
-from controllers import DataController, ProjectController, ProcessController
+from controllers import DataController, ProjectController, ProcessController,NlpController
 from models import ResponseSignals
 import os
 import aiofiles
@@ -83,9 +83,9 @@ async def upload_data(
 
 
 @data_router.post("/process/{project_id}")
-async def process_endpoint(
-    request: Request, project_id: int, process_request: ProcessRequest
-):
+async def process_endpoint(request: Request, project_id: int,
+                            process_request: ProcessRequest):
+    
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
@@ -119,7 +119,18 @@ async def process_endpoint(
     inserted_count = 0
     no_files = 0
     chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
+    nlp_controller = NlpController.NlpController(
+        vector_db_client=request.app.vector_db_client,
+        embedding_client=request.app.embedding_client,
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser,
+    )
+    
     if process_request.do_reset == 1:
+        collection_name = nlp_controller.create_collection_name(
+            project_id=project.project_id
+        )
+        _= await request.app.vector_db_client.delete_collection(collection_name=collection_name)
         _ = await chunk_model.delete_all_chunks_by_project_id(project_id=(project.project_id))
 
     for asset_id, file_id in project_file_ids.items():

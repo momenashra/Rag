@@ -59,6 +59,6 @@ set you environment variables in the `.env` file like api keys
 7. upload test file `test.csv`
 8. Now excute & Your are done!
 ### option 2 :
-* You can also easily pull mu docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
+* You can also easily pull my docker iamge from docker-hub using this command `docker pull momenamuhammed/time_series_forecasting:latest`
 * It will make every thing for you!
 
