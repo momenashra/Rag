@@ -11,7 +11,6 @@ motor==3.6.1
 openai==1.75.0
 cohere==5.13.2
 qdrant-client==1.12.1
-
 SQLAlchemy==2.0.40
 asyncpg==0.30.0
 
@@ -20,7 +19,7 @@ alembic==1.15.2
 psycopg2==2.9.10
 pgvector==0.4.0
 nltk==3.9.1
-
+# langchain-cohere
 prometheus_client==0.21.1
 starlette-exporter==0.23.0
 fastapi-health==0.4.0
