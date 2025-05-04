@@ -135,6 +135,7 @@ async def search_index(request: Request,project_id: int,search_request: SearchRe
         text=search_request.text,
         limit=search_request.limit
     )
+    
     if search_results:
         return JSONResponse(
             content={
@@ -179,7 +180,8 @@ async def search_index(request: Request,project_id: int,answer_request: AnswerRe
                 "signal": ResponseSignals.GENERATION_SUCCESS.value,
                 "answer": answer,
                 "full_prompt": full_prompt,
-                "chat_history": chat_history
+                "chat_history": chat_history,
+         
             },
         )
     else:

@@ -1,12 +1,12 @@
 from .BaseController import BaseController
-from models import ResponseSignals
 from fastapi import HTTPException
 
-from models import ProcessingEnums
-from models.db_shemas import DataChunk, Project,RetrivedData
+from models.db_shemas import DataChunk, Project
 from typing import List
 from stores.llm.LLMEnums import DocumentTypeEnums
 import json
+from models.db_shemas import RetrivedData
+
 class NlpController(BaseController):
     def __init__(self,vector_db_client,embedding_client,generation_client,template_parser):
         super().__init__()
@@ -75,7 +75,19 @@ class NlpController(BaseController):
                             vector=query_vector,
                             limit=limit,
             )
-        return search_result
+        reranked_search_result =  self.embedding_client.rerank_search_result(query=text,documents=search_result)
+        print(f"reranked_search_result is {reranked_search_result}")
+        
+    
+    
+        return [
+            RetrivedData(
+                text=record['document'],  # Using dictionary keys
+                score=record['score']
+            )
+            for record in reranked_search_result
+        ]
+
 
     async def answer_rag_questions(self,project:Project,query:str,limit:int=10):
         retrived_documents =await  self.search_vector_db_collection(project=project,text=query,limit=limit)
@@ -101,6 +113,11 @@ class NlpController(BaseController):
             )
             for idx,doc in enumerate(retrived_documents)
         ])
+        # summary_chain = self.generation_client.get_memory()
+        # summary_text = summary_chain.memory.buffer  # get the actual summary    
+        # summary_prompt = self.template_parser.get(group="rag",key="summary_prompt",vars={
+        #     "summary": summary_text
+        # })
         footer_prompt = self.template_parser.get(
             group="rag",
             key="footer_prompt",
@@ -125,3 +142,4 @@ class NlpController(BaseController):
             temperature=self.generation_client.default_temperature
         )
         return answer,full_prompt,chat_history
+    

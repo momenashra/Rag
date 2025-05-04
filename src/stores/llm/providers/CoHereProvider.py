@@ -3,7 +3,8 @@ import cohere
 from ..LLMEnums import CoHereEnums ,DocumentTypeEnums
 import logging
 from typing import List,Union
-import asyncio
+# from langchain_cohere import CohereRerank,ChatCohere
+
 class CoHereProvider(LLMInterface):
     def __init__(self, api_key: str,
                         default_max_input_tokens:int=1000,
@@ -113,3 +114,26 @@ class CoHereProvider(LLMInterface):
     def preprocess_text(self, text:str):
         # Preprocess the text
         return text[:self.default_max_input_tokens].strip()
+    
+    def rerank_search_result(self,query:str,documents:list):
+        reranked_documents = self.client.rerank(
+            model="rerank-english-v3.0",
+            top_n=2,
+            return_documents=True,
+            query=query,
+            documents=documents
+        )
+
+        extracted_results = []
+
+        # Access the results from the V2RerankResponse object
+        for item in reranked_documents.results:
+            extracted_results.append({
+                'document': item.document.text,
+                'score': item.relevance_score
+            })
+        
+        print(f"Reranked results: {extracted_results}")
+        return extracted_results
+
+        
