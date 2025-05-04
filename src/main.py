@@ -4,12 +4,13 @@ from helpers.config import get_settings
 from stores import LLMProviderFactory
 from stores.vectordb.VectorDBProvidersFactory import VectorDBProvidersFactory
 from stores.llm.templetes.templete_parser import TemplateParser
-
+from utils.metrics import setup_metrics
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 app = FastAPI()
 
+setup_metrics(app)
 
 @app.on_event("startup")
 async def startup_span():
