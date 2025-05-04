@@ -23,10 +23,10 @@ RUN uv pip install -r requirements.txt --system
 COPY src/ .
 
 # create directory for alembic migrations
-RUN mkdir -p app/models/db_shemas/rag   
+RUN mkdir -p /app/models/db_shemas/rag   
 
 # copy alembic.ini file to the container
-COPY docker/rag/alembic.ini app/models/db_shemas/rag
+COPY docker/rag/alembic.ini /app/models/db_shemas/rag/
  
 COPY docker/rag/entrypoint.sh /entrypoint.sh
 
