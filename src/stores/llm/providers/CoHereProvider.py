@@ -2,7 +2,8 @@ from ..LLMinterface import LLMInterface
 import cohere
 from ..LLMEnums import CoHereEnums ,DocumentTypeEnums
 import logging
-
+from typing import List,Union
+import asyncio
 class CoHereProvider(LLMInterface):
     def __init__(self, api_key: str,
                         default_max_input_tokens:int=1000,
@@ -57,38 +58,54 @@ class CoHereProvider(LLMInterface):
         return response.message.content[0].text
 
 
-    def embed_text(self, text:str,document_type:str=None):
+    def embed_text(self, text:Union[str, List[str]], document_type:str=None, batch_size:int=50):
         if self.client is None:
             self.logger.error("Client is not initialized. Please provide a valid API key and URL.")
             return None
-        
+
+        if isinstance(text, str):
+            text = [text]
+
         if not self.embedding_model_id:
             self.logger.error("Embedding model ID is not set. Please set it using set_embedding_model method.")
             return None
-        self.text = text
-        self.document_type = document_type
+
         input_type = CoHereEnums.DOCUMENT.value
         if document_type == DocumentTypeEnums.QUERY.value:
             input_type = CoHereEnums.QUERY.value
-        response=self.client.embed(
-        texts=[self.preprocess_text(text)], # Preprocess the text
-        model=self.embedding_model_id,
-        input_type=input_type,
-        # output_dimension=1024,
-        embedding_types=["float"],
-        )
-        # print(response.embeddings.float[0])
-        if response is None or response.embeddings is None or response.embeddings.float is None:
-            self.logger.error("Failed to get embedding from Cohere API.")
-            return None
-        return response.embeddings.float[0]
+
+        all_embeddings = []
+
+        for i in range(0, len(text), batch_size):
+            batch_texts = text[i:i+batch_size]
+            try:
+                response = self.client.embed(
+                    texts=[self.preprocess_text(t) for t in batch_texts],
+                    model=self.embedding_model_id,
+                    input_type=input_type,
+                    embedding_types=["float"],
+                )
+            except Exception as e:
+                self.logger.error(f"Error calling Cohere API for batch: {e}")
+                continue
+
+            if response is None or response.embeddings is None or response.embeddings.float is None:
+                self.logger.error("Failed to get embeddings for batch from Cohere API.")
+                continue
+
+            all_embeddings.extend(response.embeddings.float)
+
+            # OPTIONAL: Sleep to avoid API rate limit
+            # asyncio.sleep(1)  # Small pause
+
+        return all_embeddings
 
 
     #this function to make app more flexible to use different models during runtime
     def construct_prompt(self, prompt:str,role:str):
         return{
             "role": role,
-            "content": self.preprocess_text(prompt)
+            "content": prompt
         }
 
 
