@@ -4,6 +4,7 @@ from ..VectorDBEnums import (VectorDBEnums,DistanceTypeEnum,PgVectorTableSchemeE
 import logging
 from typing import List
 from models.db_shemas import RetrivedData
+from models.db_shemas.rag.shemes import Summary
 from sqlalchemy.sql import text as sql_text
 import json
 
@@ -111,6 +112,8 @@ class PGVectorProvider(VectorDBInterface):
                             f'{PgVectorTableSchemeEnums.VECTOR.value} vector({embedding_dimension}), '
                             f'{PgVectorTableSchemeEnums.METADATA.value} jsonb DEFAULT \'{{}}\', '
                             f'{PgVectorTableSchemeEnums.CHUNK_ID.value} integer, '
+                            f'{PgVectorTableSchemeEnums.SUMMARY.value} text, '
+                            f'{PgVectorTableSchemeEnums.SUMMARY_METADATA.value} text , '
                             f'FOREIGN KEY ({PgVectorTableSchemeEnums.CHUNK_ID.value}) REFERENCES chunks(chunk_id)'
                         ')'
                     )
@@ -206,7 +209,7 @@ class PGVectorProvider(VectorDBInterface):
     
 
     async def insert_many(self, collection_name: str, texts: list,
-                         vectors: list, metadata: list = None,
+                         vectors: list, metadata: list = None, summary: list = None, summary_metadata: list = None,
                          record_ids: list = None, batch_size: int = 50):
         
         is_collection_existed = await self.is_collection_exists(collection_name=collection_name)
@@ -221,6 +224,12 @@ class PGVectorProvider(VectorDBInterface):
         if not metadata or len(metadata) == 0:
             metadata = [None] * len(texts)
         
+        if not summary or len(summary) == 0:
+            summary = [None] * len(texts)
+            
+        if not summary_metadata or len(summary_metadata) == 0:
+            summary_metadata = [None] * len(texts)
+        
         async with self.db_client() as session:
             async with session.begin():
                 for i in range(0, len(texts), batch_size):
@@ -228,25 +237,31 @@ class PGVectorProvider(VectorDBInterface):
                     batch_vectors = vectors[i:i + batch_size]
                     batch_metadata = metadata[i:i + batch_size]
                     batch_record_ids = record_ids[i:i + batch_size]
+                    batch_summary = summary[i:i + batch_size]
+                    batch_summary_metadata = summary_metadata[i:i + batch_size]
 
                     values = []
 
-                    for _text, _vector, _metadata, _record_id in zip(batch_texts, batch_vectors, batch_metadata, batch_record_ids):
+                    for _text, _vector, _metadata, _record_id, _batch_summary, _batch_summary_metadata in zip(batch_texts, batch_vectors, batch_metadata, batch_record_ids, batch_summary, batch_summary_metadata):
                         
                         metadata_json = json.dumps(_metadata, ensure_ascii=False) if _metadata is not None else "{}"
                         values.append({
                             'text': _text,
                             'vector': "[" + ",".join([ str(v) for v in _vector ]) + "]",
                             'metadata': metadata_json,
-                            'chunk_id': _record_id
+                            'chunk_id': _record_id,
+                            'summary': _batch_summary if _batch_summary is not None else None,
+                            'summary_metadata': _batch_summary_metadata
                         })
                     
                     batch_insert_sql = sql_text(f'INSERT INTO {collection_name} '
                                     f'({PgVectorTableSchemeEnums.TEXT.value}, '
                                     f'{PgVectorTableSchemeEnums.VECTOR.value}, '
-                                    f'{PgVectorTableSchemeEnums.METADATA.value}, '
-                                    f'{PgVectorTableSchemeEnums.CHUNK_ID.value}) '
-                                    f'VALUES (:text, :vector, :metadata, :chunk_id)')
+                                    f'{PgVectorTableSchemeEnums.METADATA.value}, '  
+                                    f'{PgVectorTableSchemeEnums.CHUNK_ID.value}, '
+                                    f'{PgVectorTableSchemeEnums.SUMMARY.value}, '
+                                    f'{PgVectorTableSchemeEnums.SUMMARY_METADATA.value}) '  
+                                    f'VALUES (:text, :vector, :metadata, :chunk_id, :summary, :summary_metadata)')
                     
                     await session.execute(batch_insert_sql, values)
 
