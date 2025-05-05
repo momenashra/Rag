@@ -12,6 +12,28 @@ This project is a modular, scalable Retrieval-Augmented Generation (RAG) platfor
 
 ---
 
+## Latest Features
+
+### Summary Memory System
+- Context-aware conversation history
+- Intelligent summary storage and retrieval
+- Project-specific conversation tracking
+- Enhanced context management for better responses
+
+### Enhanced RAG Capabilities
+- Improved context retrieval with summary integration
+- Better conversation continuity
+- More comprehensive document processing
+- Advanced template system for context management
+
+### Security & Configuration
+- Improved environment file handling
+- Enhanced configuration management
+- Better secret handling
+- Streamlined deployment process
+
+---
+
 ## Create a Project Scaffold
 
 * Create a development environment that is cloud-based
@@ -59,8 +81,6 @@ cp .env.example .env
 
 ## Local Development
 
-### Option 1: Manual Setup
-
 1. **Create Virtual Environment**
    ```bash
    conda create -n mini-rag
@@ -73,28 +93,23 @@ cp .env.example .env
    ```bash
    git clone https://github.com/momenashra/RAG.git
    ```
-4. **Run Make**
+4. **go to docker**
    ```bash
-   make all
+   cd docker/
    ```
 5. **Run the App**
    ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 5000
+   docker compose up -d
    ```
-6. **Open in Browser**
+6. **Open in browser**
    ```
-   http://localhost:5000/
+   http://localhost:8000/
    ```
-7. **Upload a Test File** (e.g., `test.csv`)
-8. **Execute and You’re Done!**
-
-### Option 2: Docker
-
-* You can also easily pull my docker image from docker-hub using this command:
-  ```bash
-  docker pull momenamuhammed/time_series_forecasting:latest
-  ```
-* It will make everything for you!
+7. **open postman**
+   use api end points after setup request settings in postman by adding api variable
+    initial value 'http://127.0.0.1:8000'
+7. **Upload a Test File** (e.g., `test.pdf`)
+8. **Execute and You're Done!**
 
 ---
 
@@ -109,6 +124,9 @@ cp .env.example .env
 - Comprehensive Enum usage for maintainable code
 - Environment-based configuration for easy deployment and scaling
 - Docker & Codespaces ready for rapid development and deployment
+- Advanced summary memory system for context-aware conversations
+- Enhanced RAG capabilities with improved context management
+- Secure configuration and environment management
 
 ---
 
@@ -119,6 +137,7 @@ cp .env.example .env
 - **Controllers:** Orchestrate complex workflows, such as NLP tasks and vector database operations.
 - **Stores:** Manage connections to LLM providers and vector databases.
 - **Helpers:** Provide configuration and utility functions.
+- **Memory System:** Manages conversation history and context through summaries.
 
 ---
 
@@ -128,7 +147,7 @@ cp .env.example .env
 - `POST /api/v1/nlp/index/push/{project_id}` — Index project data into vector DB
 - `GET /api/v1/nlp/index/info/{project_id}` — Get vector DB collection info
 - `POST /api/v1/nlp/index/search/{project_id}` — Semantic search in indexed data
-- `POST /api/v1/nlp/index/answer/{project_id}` — RAG-based question answering
+- `POST /api/v1/nlp/index/answer/{project_id}` — RAG-based question answering with context awareness
 
 ---
 
@@ -137,6 +156,8 @@ cp .env.example .env
 - **Document Indexing:** Efficiently index and manage large collections of documents.
 - **Semantic Search:** Retrieve relevant information using vector-based search.
 - **Question Answering:** Leverage LLMs for advanced Q&A over your data.
+- **Contextual Conversations:** Maintain conversation context through intelligent summary management.
+- **Project-Specific Knowledge:** Track and utilize project-specific conversation history.
 
 ---
 
