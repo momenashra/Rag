@@ -2,18 +2,21 @@ from .BaseController import BaseController
 from fastapi import HTTPException
 
 from models.db_shemas import DataChunk, Project
+from models.db_shemas.rag.shemes import Summary
 from typing import List
 from stores.llm.LLMEnums import DocumentTypeEnums
 import json
 from models.db_shemas import RetrivedData
+from models.SummaryModel import SummaryModel
 
 class NlpController(BaseController):
-    def __init__(self,vector_db_client,embedding_client,generation_client,template_parser):
+    def __init__(self,vector_db_client,embedding_client,generation_client,template_parser,db_client):
         super().__init__()
         self.vector_db_client = vector_db_client
         self.embedding_client = embedding_client
         self.generation_client = generation_client
         self.template_parser = template_parser
+        self.db_client = db_client
         
     def create_collection_name(self,project_id:str):
         collection_name = f"collection_{self.vector_db_client.default_vector_size}_{project_id}"
@@ -38,14 +41,22 @@ class NlpController(BaseController):
             json.dumps( collection_info, default=lambda o: o.__dict__ ) 
         )
     
-    async def index_into_vector_db (self,project:Project,processed_chunks:List [DataChunk],chunks_ids:list[int], do_reset:bool =False):
+    async def index_into_vector_db (self,project:Project,processed_chunks:List [DataChunk],chunks_ids:list[int], do_reset:bool =False,summary:Summary=None):
 
         # get the collection name from the project id
         collection_name = self.create_collection_name(project_id=project.project_id)
         #manage data
         texts = [chunk.chunk_text for chunk in processed_chunks]
         metadata = [chunk.chunk_metadata for chunk in processed_chunks]
-        vectors=    self.embedding_client.embed_text(text=texts,document_type=DocumentTypeEnums.DOCUMENT.value)
+        vectors = self.embedding_client.embed_text(text=texts,document_type=DocumentTypeEnums.DOCUMENT.value)
+        
+        # Handle summary if it exists
+        summary_texts = None
+        summary_metadata = None
+        if summary is not None:
+            summary_texts = summary.summary_text
+            summary_metadata = summary.summary_metadata
+
         # create collection if not exists
         _=await self.vector_db_client.create_collection(collection_name=collection_name, 
                                                            embedding_dimension=self.embedding_client.embedding_size, do_reset =False)
@@ -57,6 +68,9 @@ class NlpController(BaseController):
             vectors=vectors,
             metadata=metadata,
             record_ids=chunks_ids,
+            summary=summary_texts,
+            summary_metadata=summary_metadata
+
         )
         return True
     
@@ -90,34 +104,43 @@ class NlpController(BaseController):
 
 
     async def answer_rag_questions(self,project:Project,query:str,limit:int=10):
-        retrived_documents =await  self.search_vector_db_collection(project=project,text=query,limit=limit)
-        answer,full_prompt,chat_history=None, None, None
+        retrived_documents = await self.search_vector_db_collection(project=project,text=query,limit=limit)
+        answer,full_prompt,chat_history,summary,previous_question=None, None, None, None, None
 
         if not retrived_documents or len(retrived_documents) ==0:
             return answer,full_prompt,chat_history
 
-        #construcrt the context for the LLM (query + retrived documents)
+        # Get previous summaries for context
+        summary_model = await SummaryModel.create_instance(db_client=self.db_client)
+        previous_summaries = await summary_model.get_all_summaries(project_id=project.project_id)
+        
+        # Construct summary context
+        summary_context = ""
+        if previous_summaries:
+            summary_context = "\nPrevious summaries:\n" + "\n".join([
+                f"- {s.summary_text} (Query: {s.summary_metadata})"
+                for s in previous_summaries
+            ])
+
+        #construct the context for the LLM (query + retrived documents)
         system_prompt = self.template_parser.get(
             group="rag",
             key="system_prompt",
             )
     
         documents_prompts="\n".join([
-
             self.template_parser.get(group="rag",
                 key="document_prompt",
                 vars={
-                    "doc_num": idx+1 ,
-                    "chunk_text": doc.text
+                    "doc_num": idx+1,
+                    "chunk_text": doc.text,
+                    "summary": summary_context,
+                    "previous_question": query
                 }
             )
             for idx,doc in enumerate(retrived_documents)
         ])
-        # summary_chain = self.generation_client.get_memory()
-        # summary_text = summary_chain.memory.buffer  # get the actual summary    
-        # summary_prompt = self.template_parser.get(group="rag",key="summary_prompt",vars={
-        #     "summary": summary_text
-        # })
+        
         footer_prompt = self.template_parser.get(
             group="rag",
             key="footer_prompt",
@@ -135,11 +158,11 @@ class NlpController(BaseController):
 
         full_prompt="\n\n".join([documents_prompts,footer_prompt])
 
-        answer=self.generation_client.generate_text(
+        answer,summary=self.generation_client.generate_text(
             prompt=full_prompt,
             chat_history=chat_history,
             max_output_tokens=self.generation_client.default_max_output_tokens,
             temperature=self.generation_client.default_temperature
         )
-        return answer,full_prompt,chat_history
-    
+        
+        return answer,full_prompt,chat_history,summary

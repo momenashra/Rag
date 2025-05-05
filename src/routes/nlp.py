@@ -9,6 +9,9 @@ from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from models.db_shemas import DataChunk
 from tqdm.auto import tqdm
+from models.SummaryModel import SummaryModel
+from models.db_shemas.rag.shemes import Summary, Asset
+from models.AssetModel import AssetModel
 
 app_logger = logging.getLogger("uvicorn.error")
 
@@ -23,7 +26,7 @@ async def index_project(request: Request,project_id: int,push_request: PushReque
     project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
 
     chunk_model = await ChunkModel.create_instance(db_client=request.app.db_client)
-
+    summary_model = await SummaryModel.create_instance(db_client=request.app.db_client)
     # Check if the project exists in the database
     project = await project_model.get_project_or_create_one(project_id=project_id)
 
@@ -39,7 +42,8 @@ async def index_project(request: Request,project_id: int,push_request: PushReque
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
         generation_client=request.app.generation_client,
-        template_parser=request.app.template_parser
+        template_parser=request.app.template_parser,
+        db_client=request.app.db_client
     )
     
     has_records= True
@@ -67,10 +71,13 @@ async def index_project(request: Request,project_id: int,push_request: PushReque
 
         chunks_ids = [c.chunk_id   for c in page_chunks]
         idx+=len(page_chunks)
+        summary = await summary_model.get_summary(summary_id=project.project_id)
+                
         is_inserted = await nlp_controller.index_into_vector_db(
             project=project,
             processed_chunks=page_chunks,
-            chunks_ids=chunks_ids
+            chunks_ids=chunks_ids,
+            summary=summary
             )
         
         if not is_inserted:
@@ -103,7 +110,8 @@ async def get_index_project_info(request: Request,project_id: int):
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
         generation_client=request.app.generation_client,
-        template_parser=request.app.template_parser
+        template_parser=request.app.template_parser,
+        db_client=request.app.db_client
     )
 
     collection_info = await nlp_controller.get_vector_db_collection_info(
@@ -128,7 +136,8 @@ async def search_index(request: Request,project_id: int,search_request: SearchRe
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
         generation_client=request.app.generation_client,
-        template_parser=request.app.template_parser
+        template_parser=request.app.template_parser,
+        db_client=request.app.db_client
     )
     search_results = await nlp_controller.search_vector_db_collection(
         project=project,
@@ -166,14 +175,43 @@ async def search_index(request: Request,project_id: int,answer_request: AnswerRe
         vector_db_client=request.app.vector_db_client,
         embedding_client=request.app.embedding_client,
         generation_client=request.app.generation_client,
-        template_parser=request.app.template_parser
+        template_parser=request.app.template_parser,
+        db_client=request.app.db_client
     )
 
-    answer,full_prompt,chat_history= await nlp_controller.answer_rag_questions(
+    answer,full_prompt,chat_history,summary= await nlp_controller.answer_rag_questions(
         project=project,
         query=answer_request.query,
         limit=answer_request.limit
     )
+    summary_model = await SummaryModel.create_instance(db_client=request.app.db_client)
+    
+    # Get the latest summary order
+    previous_summaries = await summary_model.get_all_summaries(project_id=project.project_id)
+    next_order = len(previous_summaries) if previous_summaries else 0
+    
+    # Create an Asset record first
+    asset_model = await AssetModel.create_instance(db_client=request.app.db_client)
+    
+    # Create a new asset for this summary
+    asset = Asset(
+        asset_type="summary",
+        asset_name=f"Summary for project {project.project_id}",
+        asset_size=len(summary),
+        asset_project_id=project.project_id
+    )
+    asset = await asset_model.create_asset(asset=asset)
+    
+    # Create a Summary model instance with the new asset_id
+    summary_instance = Summary(
+        summary_text=summary,
+        summary_metadata=answer_request.query,
+        summary_order=next_order,  # Use the next order number
+        summary_project_id=project.project_id,
+        summary_asset_id=asset.asset_id
+    )
+    summary = await summary_model.create_summary(summary=summary_instance)
+
     if answer and full_prompt and chat_history:
         return JSONResponse(
             content={
@@ -181,7 +219,8 @@ async def search_index(request: Request,project_id: int,answer_request: AnswerRe
                 "answer": answer,
                 "full_prompt": full_prompt,
                 "chat_history": chat_history,
-         
+                "summary_until_now": summary.summary_text,
+                "summary_metadata": summary.summary_metadata
             },
         )
     else:
