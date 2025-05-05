@@ -2,8 +2,7 @@
 
 # Multimodal RAG Application with Web Dev Environment
 
-![Architecture Diagram](assets/plantuml.svg)
-
+![ci-cd](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*QPH4dpcdC-BwA_eQykLu2Q.png)
 ---
 
 ## Overview
