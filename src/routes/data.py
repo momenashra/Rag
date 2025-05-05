@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
+from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
 from fastapi.responses import JSONResponse
 from helpers import get_settings, Settings
 from controllers import DataController, ProjectController, ProcessController,NlpController
@@ -18,7 +19,25 @@ app_logger = logging.getLogger("uvicorn.error")
 data_router = APIRouter(
     prefix="/api/v1/data",
     tags=["api_v1", "data"],
+import logging
+from .schema.schema_data import ProcessRequest
+from models.ProjectModel import ProjectModel
+from models.ChunkModel import ChunkModel
+from models.db_shemas import DataChunk, Asset
+from models.AssetModel import AssetModel
+from models.enums.AssetTypeEnum import AssetTypeEnum
+
+app_logger = logging.getLogger("uvicorn.error")
+
+data_router = APIRouter(
+    prefix="/api/v1/data",
+    tags=["api_v1", "data"],
 )
+
+# Initialize the DataController instance
+# Initialize the ProjectModel instance
+data_controller = DataController()
+
 
 # Initialize the DataController instance
 # Initialize the ProjectModel instance
@@ -180,4 +199,5 @@ async def process_endpoint(request: Request, project_id: int,
                 "inserted_chunks_count": inserted_count,
                 "processed_files_count": no_files,
             }
+        )
         )
