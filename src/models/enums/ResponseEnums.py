@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class ResponseSignals(Enum):
 
     FILE_UPLOAD_SUCCESS = "file_uploaded_successfully"
@@ -10,4 +12,12 @@ class ResponseSignals(Enum):
     FILE_PROCESSING_SUCCESS = "file_processed_successfully"
     NO_FILES_ERROR = "no_files_to_process"
     FILE_NOT_FOUND = "no_file_id_not_found"
-    
+    PROJECT_NOT_FOUND = "project_id_not_found"
+    PROJECT_INDEX_FAIL = "project_index_failed"
+    PROJECT_INDEX_SUCCESS = "project_indexed_successfully"
+    PROJECT_INDEX_INFO_FAILED = "project_index_info_failed"
+    PROJECT_INDEX_INFO_SUCCESS = "project_index_info_retrived_successfully"
+    VECTOR_DB__SEARCH_ERROR = "vector_db_search_error"
+    VECTOR_DB__SEARCH_SUCCESS = "vector_db_search_success"
+    GENERATION_SUCCESS = "generation_success"
+    GENERATION_ERROR = "generation_error"
