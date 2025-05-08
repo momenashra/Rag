@@ -173,7 +173,7 @@ class CoHereProvider(LLMInterface):
         tools = tool_search()
         tool_names = ", ".join([tool.name for tool in tools])
         
-        llm = ChatCohere(cohere_api_key="6sqCJ53yVUagAaosIARW68OqsAmsArhzCGr2Z5JQ", model="command")
+        llm = ChatCohere(cohere_api_key="" , model="command")
 
         agent = create_react_agent(llm, tools, prompt)
 
