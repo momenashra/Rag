@@ -8,6 +8,8 @@ from stores.llm.LLMEnums import DocumentTypeEnums
 import json
 from models.db_shemas import RetrivedData
 from models.SummaryModel import SummaryModel
+from langchain_core.prompts import PromptTemplate
+from helpers.tools import tool_search
 
 class NlpController(BaseController):
     def __init__(self,vector_db_client,embedding_client,generation_client,template_parser,db_client):
@@ -166,3 +168,23 @@ class NlpController(BaseController):
         )
         
         return answer,full_prompt,chat_history,summary
+    
+    
+    async def web_search(self, project: Project, query: str, limit: int = 10):
+        tools = tool_search()
+        tool_names = ", ".join([tool.name for tool in tools])
+        
+        full_prompt = self.template_parser.get(
+            group="rag_web",
+            key="react_template",
+        )
+        prompt_react = PromptTemplate(
+            template=full_prompt,
+            input_variables=["input", "agent_scratchpad", "tools", "tool_names"]
+        )
+        # Call generator
+        answer = self.generation_client.generate_web(
+            prompt=prompt_react,
+            query=query
+        )
+        return answer, prompt_react

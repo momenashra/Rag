@@ -5,7 +5,10 @@ import logging
 from typing import List,Union
 # from langchain_cohere import CohereRerank,ChatCohere
 import datetime
-
+from langchain.agents import AgentExecutor, create_react_agent
+from helpers.tools import tool_search
+from langchain_cohere import ChatCohere
+from langchain.prompts import PromptTemplate
 class CoHereProvider(LLMInterface):
     def __init__(self, api_key: str,
                         default_max_input_tokens:int=1000,
@@ -82,10 +85,9 @@ class CoHereProvider(LLMInterface):
         
         if summary_response is None or summary_response.message is None or summary_response.message.content[0] is None or summary_response.message.content[0].text is None:
             self.logger.error("Failed to get summary from Cohere API.")
-            return response.message.content[0].text, None
+            return response.message.content[0].text, "no summary"
             
         return response.message.content[0].text, summary_response.message.content[0].text
-
 
     def embed_text(self, text:Union[str, List[str]], document_type:str=None, batch_size:int=50):
         if self.client is None:
@@ -167,4 +169,21 @@ class CoHereProvider(LLMInterface):
             "content": "summarize the following text:"
         }
 
-    
+    def generate_web(self, prompt: PromptTemplate, query: str = None):
+        tools = tool_search()
+        tool_names = ", ".join([tool.name for tool in tools])
+        
+        cohere_llm = ChatCohere(cohere_api_key="hq0etJhd76UBrfX1SRhIUNxvupc7dzodFZMQgD2u", temperature=0.1)
+        agent = create_react_agent(cohere_llm, tools, prompt)
+        agent_executor = AgentExecutor(
+            agent=agent,
+            tools=tools,
+            verbose=False,
+            handle_parsing_errors=True
+        )
+        response = agent_executor.invoke({
+            "input": query,
+            "tools": "\n".join([f"{tool.name}: {tool.description}" for tool in tools]),
+            "tool_names": tool_names
+        })
+        return response.get("output", None)
