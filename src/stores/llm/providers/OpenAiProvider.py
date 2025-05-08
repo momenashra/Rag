@@ -87,7 +87,24 @@ class OpenAiprovider(LLMInterface):
             return None
         return [rec.embedding for rec in response.data]
 
-
+    # def rerank_search_result(self,query:str,documents:list):
+    #     reranked_documents = self.client.rerank(
+    #         model="rerank-english-v3.0",
+    #         top_n=2,
+    #         return_documents=True,
+    #         query=query,
+    #         documents=documents
+    #     )
+    #     extracted_results = []
+    #     # Access the results from the V2RerankResponse object
+    #     for item in reranked_documents.results:
+    #         extracted_results.append({
+    #             'document': item.document.text,
+    #             'score': item.relevance_score
+    #         })
+        
+    #     print(f"Reranked results: {extracted_results}")
+    #     return extracted_results
 
 
     #this function to make app more flexible to use different models during runtime
