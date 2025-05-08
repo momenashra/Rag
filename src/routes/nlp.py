@@ -71,7 +71,7 @@ async def index_project(request: Request,project_id: int,push_request: PushReque
 
         chunks_ids = [c.chunk_id   for c in page_chunks]
         idx+=len(page_chunks)
-        summary = await summary_model.get_summary(summary_id=project.project_id)
+        summary = await summary_model.get_summary(project_id=project.project_id)
                 
         is_inserted = await nlp_controller.index_into_vector_db(
             project=project,
@@ -221,6 +221,41 @@ async def search_index(request: Request,project_id: int,answer_request: AnswerRe
                 "chat_history": chat_history,
                 "summary_until_now": summary.summary_text,
                 "summary_metadata": summary.summary_metadata
+            },
+        )
+    else:
+        return JSONResponse(
+            content={
+                "signal": ResponseSignals.GENERATION_ERROR.value,
+                },
+            )
+@nlp_router.post("/index/web/{project_id}")
+async def search_index(request: Request,project_id: int,answer_request: AnswerRequest):
+
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
+
+
+    # Check if the project exists in the database
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+    nlp_controller = NlpController(
+        vector_db_client=request.app.vector_db_client,
+        embedding_client=request.app.embedding_client,
+        generation_client=request.app.generation_client,
+        template_parser=request.app.template_parser,
+        db_client=request.app.db_client
+    )
+
+    answer,full_prompt= await nlp_controller.web_search(
+        project=project,
+        query=answer_request.query,
+        limit=answer_request.limit
+    )
+
+    if answer and full_prompt:
+        return JSONResponse(
+            content={
+                "signal": ResponseSignals.GENERATION_SUCCESS.value,
+                "answer": answer,
             },
         )
     else:

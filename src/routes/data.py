@@ -124,6 +124,7 @@ async def process_endpoint(request: Request, project_id: int,
         embedding_client=request.app.embedding_client,
         generation_client=request.app.generation_client,
         template_parser=request.app.template_parser,
+        db_client=request.app.db_client
     )
     
     if process_request.do_reset == 1:
