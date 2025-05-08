@@ -173,17 +173,23 @@ class CoHereProvider(LLMInterface):
         tools = tool_search()
         tool_names = ", ".join([tool.name for tool in tools])
         
-        cohere_llm = ChatCohere(cohere_api_key="hq0etJhd76UBrfX1SRhIUNxvupc7dzodFZMQgD2u", temperature=0.1)
-        agent = create_react_agent(cohere_llm, tools, prompt)
+        llm = ChatCohere(cohere_api_key="6sqCJ53yVUagAaosIARW68OqsAmsArhzCGr2Z5JQ", model="command")
+
+        agent = create_react_agent(llm, tools, prompt)
+
+# Configure agent executor with strict parameters
         agent_executor = AgentExecutor(
             agent=agent,
             tools=tools,
-            verbose=False,
-            handle_parsing_errors=True
+            verbose=True,
+            max_iterations=10,
+            handle_parsing_errors=True,
+            max_execution_time=200     # Give it up to 1 minute to finish
+
         )
-        response = agent_executor.invoke({
-            "input": query,
-            "tools": "\n".join([f"{tool.name}: {tool.description}" for tool in tools]),
-            "tool_names": tool_names
-        })
+
+        # Run the agent with proper input formatting
+        response = agent_executor.invoke(
+                {"input": query}
+        )
         return response.get("output", None)
