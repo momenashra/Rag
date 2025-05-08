@@ -32,7 +32,10 @@ async def startup_span():
     #embedding client
     app.embedding_client = llm_provider_factory.create(provider_name=settings.EMBEDDING_BACKEND)
     app.embedding_client.set_embedding_model(model_id=settings.EMBEDDING_MODLE_ID,embedding_size=settings.EMBEDDING_MODLE_SIZE)
+    import os
 
+    print("ENV: GENERATION_BACKEND =", os.getenv("GENERATION_BACKEND"))
+    print("ENV: EMBEDDING_BACKEND =", os.getenv("EMBEDDING_BACKEND"))
     #vector db client
     app.vector_db_client = Vector_DB_Providers_Factory.create(provider_name=settings.VECTOR_DB_BACKEND)
     await app.vector_db_client.connect()
