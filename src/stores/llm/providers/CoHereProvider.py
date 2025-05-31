@@ -172,7 +172,7 @@ class CoHereProvider(LLMInterface):
     def generate_web(self, prompt: PromptTemplate, query: str = None):
         tools = tool_search()
         
-        llm = ChatCohere(cohere_api_key="6sqCJ53yVUagAaosIARW68OqsAmsArhzCGr2Z5JQ", model="command")
+        llm = ChatCohere(cohere_api_key="" , model="command")
 
         agent = create_react_agent(llm, tools, prompt)
 
