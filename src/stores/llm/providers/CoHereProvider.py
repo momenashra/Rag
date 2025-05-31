@@ -171,7 +171,6 @@ class CoHereProvider(LLMInterface):
 
     def generate_web(self, prompt: PromptTemplate, query: str = None):
         tools = tool_search()
-        tool_names = ", ".join([tool.name for tool in tools])
         
         llm = ChatCohere(cohere_api_key="6sqCJ53yVUagAaosIARW68OqsAmsArhzCGr2Z5JQ", model="command")
 
